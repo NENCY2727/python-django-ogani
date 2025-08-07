@@ -127,14 +127,22 @@
                                 <a href="{% url 'logout' %}"><i class="fa fa-user"></i>logout</a>
                                 <a href="{% url 'login' %}"></i>{{uid.username}}</a>
                                 {% endif %} -->
-                                {% if "email" not  in request.session %}
+                                <!-- {% if "email" not  in request.session %}
                                 <a href="{% url 'register' %}"><i class="fa fa-user"></i>Register</a>
                                 <a href="{% url 'login' %}"><i class="fa fa-user"></i>login</a>
                                 {% else %}
                                 <a href="{% url 'logout' %}"><i class="fa fa-user"></i>Logout</a>
-                                <a href="{% url 'login' %}"></i>{{uid.username}}</a>
-                                {% endif %}
-                            </div>
+                                <a href="{% url 'login' %}"></i>{{username}}</a>
+                                {% endif %} -->
+                    {% if not request.session.email %}
+                        <a href="{% url 'register' %}"><i class="fa fa-user"></i>Register</a>
+                        <a href="{% url 'login' %}"><i class="fa fa-user"></i>Login</a>
+                    {% else %}
+                        <a href="{% url 'logout' %}"><i class="fa fa-user"></i>Logout</a>
+                        <a href="#"><i class="fa fa-user"></i> {{ username }}</a>
+                    {% endif %}
+    
+                        </div>
                         </div>
                     </div>
                 </div>

@@ -43,7 +43,7 @@ class size(models.Model):
     
 class product(models.Model):
     pname=models.CharField(max_length=30)
-    price=models.CharField(max_length=20)
+    price=models.IntegerField(max_length=20)
     image=models.ImageField(upload_to="image")
     department=models.ForeignKey(department,on_delete=models.CASCADE,blank=True,null=True)
     colorfilter=models.ForeignKey(colorfilter,on_delete=models.CASCADE,blank=True,null=True)

@@ -42,5 +42,6 @@ urlpatterns = [
     path('color', views.color, name='color'),
     path('pro', views.pro, name='pro'),
     path('size1', views.size1, name='size1'),
+    path('price', views.price, name='price'),
 ]
 

@@ -104,7 +104,7 @@ def login(request):
         contaxt={
             "msg":"Invalid Email"
         }
-        return render(request,"login.html",contaxt)
+        return render(request,"register.html",contaxt)
     else:
         return render(request, 'login.html')
 
@@ -117,7 +117,12 @@ def logout(request):
 
     
 def index(request):
-    return render(request,"index.html")
+    username = request.session.get('username')
+    contaxt={
+        "username":username
+    }
+    return render(request,"index.html",contaxt)
+
 
 def blogdetails(request):
     return render(request,"blogdetails.html")  
@@ -160,7 +165,8 @@ def shopgrid(request):
         "cid":cid,
         "col_id":col_id,
         "size_id":size_id,
-        "sid":sid  
+        "sid":sid,
+
     }
     return render(request,"shopgrid.html",contaxt)
 
@@ -225,6 +231,38 @@ def size1(request):
     }
     return render(request,"shopgrid.html",contaxt) 
 
+def price(request):
+    col_id=colorfilter.objects.all()
+    size_id=size.objects.all()
+    if request.POST:
+        min1=request.POST['min1']
+        print(min1)
+        max1=request.POST['max1']
+        print(max1)
 
-        
+        pro_id=product.objects.filter(price__lte=max1[1:],price__gte=min1[1:])
+        print(pro_id)
+        contaxt={
+            "pro_id":pro_id,
+            "min1":min1,
+            "max1":max1,
+            "col_id":col_id,
+            "size_id":size_id
+        }
+        return render (request,"shopgrid.html",contaxt)
+    else:
+        contaxt={
+            "min1":None,
+            "max1":None
+        }
+        return render (request,"shopgrid.html",contaxt)
+def shopdetails(request):
+    col_id=colorfilter.objects.all()
+    size_id=size.objects.all()
+    pro_id=product.objects.all()
 
+    contaxt={
+        "col_id":col_id,
+        "size_id":size_id,
+        "pro_id":pro_id
+    }

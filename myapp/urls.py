@@ -43,5 +43,7 @@ urlpatterns = [
     path('pro', views.pro, name='pro'),
     path('size1', views.size1, name='size1'),
     path('price', views.price, name='price'),
+    path('details/<int:id>', views.details, name='details'),
+    
 ]
 

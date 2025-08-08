@@ -256,13 +256,15 @@ def price(request):
             "max1":None
         }
         return render (request,"shopgrid.html",contaxt)
-def shopdetails(request):
+def details(request,id):
+    uid=User.objects.all()
     col_id=colorfilter.objects.all()
     size_id=size.objects.all()
-    pro_id=product.objects.all()
-
+    pro_id=product.objects.get(id=id)
     contaxt={
+        "uid":uid,
         "col_id":col_id,
         "size_id":size_id,
         "pro_id":pro_id
     }
+    return render (request,"shopdetails.html",contaxt)

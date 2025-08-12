@@ -2,6 +2,8 @@ from django.shortcuts import render,HttpResponse,redirect # type: ignore
 from .models import*
 from .models import User # type: ignore
 from .models import messages
+from django.core.paginator import Paginator # type: ignore
+from django.shortcuts import render, redirect, get_object_or_404 # type: ignore
 
 
 # Create your views here.
@@ -143,20 +145,35 @@ def shopdetails(request):
     return render(request,"shopdetails.html")
 
 def shopgrid(request):
-    dep_id=department.objects.all()
-    pro_id=product.objects.all()
-    col_id=colorfilter.objects.all()
-    size_id=size.objects.all()
+    if 'email' in request.session:
+        uid=User.objects.get(email=request.session['email'])
+        dep_id=department.objects.all()
+        pro_id=product.objects.all()
+        col_id=colorfilter.objects.all()
+        size_id=size.objects.all()
+        wish_id=Wishlist.objects.filter(user=uid)
+        l1=[]
+        for i in wish_id:
+            l1.append(i.product1)
 
-
-    did=request.GET.get("did")
-    cid=request.GET.get("color_name")
-    sid=request.POST.get("name")
+        did=request.GET.get("did")
+        cid=request.GET.get("color_name")
+        sid=request.POST.get("name")
 
     if did:
         pro_id=product.objects.filter(department=did)
     else:
         pro_id=product.objects.all()
+
+    paginator = Paginator(pro_id, 6)
+    page_number = request.GET.get('page',1)
+    try:
+        page_number=int(page_number)
+    except ValueError:
+        page_number=1
+    pro_id= paginator.get_page(page_number)
+    # show_page=Paginator.get_elided_page_range(page_number,on_each_side=1,on_ends=1)
+    show_page=paginator.get_elided_page_range(page_number,on_each_side=1,on_ends=1)
 
     contaxt={
         "dep_id":dep_id,
@@ -166,7 +183,9 @@ def shopgrid(request):
         "col_id":col_id,
         "size_id":size_id,
         "sid":sid,
-
+        "show_page":show_page,
+        "wish_id":wish_id,
+        "l1":l1
     }
     return render(request,"shopgrid.html",contaxt)
 
@@ -268,3 +287,19 @@ def details(request,id):
         "pro_id":pro_id
     }
     return render (request,"shopdetails.html",contaxt)
+
+def add_wishlist(request,id):
+    if 'email' in request.session:
+        uid=User.objects.get(email=request.session['email'])
+        pro_id=product.objects.get(id=id)
+        print(pro_id)
+        pid=Wishlist.objects.filter(product1=id,user=uid).exists()
+        if pid:
+            pid=Wishlist.objects.get(product1=id)
+            pid.delete()
+        else:
+            Wishlist.objects.create(pname=pro_id.pname,image=pro_id.image,price=pro_id.price,product1=pro_id,user=uid)
+            
+        return redirect(shopgrid)
+    else:    
+        return render (request,"shopgrid.html")

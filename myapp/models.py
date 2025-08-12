@@ -49,7 +49,20 @@ class product(models.Model):
     colorfilter=models.ForeignKey(colorfilter,on_delete=models.CASCADE,blank=True,null=True)
     size=models.ForeignKey(size,on_delete=models.CASCADE,blank=True,null=True)
     def __str__(self):
-        return self.pname           
+        return self.pname 
+
+class Wishlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE,blank=True,null=True)
+    product1= models.ForeignKey(product, on_delete=models.CASCADE,blank=True,null=True)
+    pname=models.CharField(max_length=30)
+    price=models.IntegerField(max_length=20)
+    image=models.ImageField(upload_to="image")
+
+    def __str__(self):
+        return self.pname
+    
+    
+
     
 
 

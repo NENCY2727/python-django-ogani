@@ -45,6 +45,8 @@ urlpatterns = [
     path('price', views.price, name='price'),
     path('details/<int:id>', views.details, name='details'),
     path('add_wishlist/<int:id>', views.add_wishlist, name='add_wishlist'),
-    
+    path('add_to_cart/<int:id>', views.add_to_cart, name='add_to_cart'),
+    path('pluscart/<int:id>', views.pluscart, name='pluscart'),
+    path('minuscart/<int:id>', views.minuscart, name='minuscart'),
 ]
 

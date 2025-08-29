@@ -61,6 +61,21 @@ class Wishlist(models.Model):
     def __str__(self):
         return self.pname
     
+class cart(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE,blank=True,null=True)
+    product1= models.ForeignKey(product, on_delete=models.CASCADE,blank=True,null=True)
+    name=models.CharField(max_length=30)
+    price=models.IntegerField(max_length=20)
+    total_price=models.IntegerField(max_length=20)
+    image=models.ImageField(upload_to="image")
+    qty=models.IntegerField(default=1)
+
+    def __str__(self):
+        return self.name
+
+    
+
+
     
 
     

@@ -10,4 +10,6 @@ admin.site.register(colorfilter)
 admin.site.register(product)
 admin.site.register(size)
 admin.site.register(Wishlist)
+admin.site.register(cart)
+
 

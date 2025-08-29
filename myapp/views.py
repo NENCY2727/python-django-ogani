@@ -4,6 +4,9 @@ from .models import User # type: ignore
 from .models import messages
 from django.core.paginator import Paginator # type: ignore
 from django.shortcuts import render, redirect, get_object_or_404 # type: ignore
+from .models import Wishlist
+
+
 
 
 # Create your views here.
@@ -160,37 +163,50 @@ def shopgrid(request):
         cid=request.GET.get("color_name")
         sid=request.POST.get("name")
 
-    if did:
-        pro_id=product.objects.filter(department=did)
+        if did:
+            pro_id=product.objects.filter(department=did)
+        else:
+            pro_id=product.objects.all()
+
+        paginator = Paginator(pro_id, 6)
+        page_number = request.GET.get('page',1)
+        try:
+            page_number=int(page_number)
+        except ValueError:
+            page_number=1
+        pro_id= paginator.get_page(page_number)
+        # show_page=Paginator.get_elided_page_range(page_number,on_each_side=1,on_ends=1)
+        show_page=paginator.get_elided_page_range(page_number,on_each_side=1,on_ends=1)
+
+        contaxt={
+            "dep_id":dep_id,
+            "pro_id":pro_id,
+            "did":did,
+            "cid":cid,
+            "col_id":col_id,
+            "size_id":size_id,
+            "sid":sid,
+            "show_page":show_page,
+            "wish_id":wish_id,
+            "l1":l1
+        }
+        return render(request,"shopgrid.html",contaxt)
     else:
-        pro_id=product.objects.all()
+        return render(request,"shopgrid.html")
 
-    paginator = Paginator(pro_id, 6)
-    page_number = request.GET.get('page',1)
-    try:
-        page_number=int(page_number)
-    except ValueError:
-        page_number=1
-    pro_id= paginator.get_page(page_number)
-    # show_page=Paginator.get_elided_page_range(page_number,on_each_side=1,on_ends=1)
-    show_page=paginator.get_elided_page_range(page_number,on_each_side=1,on_ends=1)
-
-    contaxt={
-        "dep_id":dep_id,
-        "pro_id":pro_id,
-        "did":did,
-        "cid":cid,
-        "col_id":col_id,
-        "size_id":size_id,
-        "sid":sid,
-        "show_page":show_page,
-        "wish_id":wish_id,
-        "l1":l1
-    }
-    return render(request,"shopgrid.html",contaxt)
 
 def shopingcart(request):
-    return render(request,"shopingcart.html")
+    # if 'email' in request.session:
+    #     uid=User.objects.get(email=request.session['email'])
+        cid=cart.objects.filter(user=User.objects.get(email=request.session['email']))
+        subtotal=0
+        for i in cid:
+            subtotal+=i.total_price
+        contaxt={
+            "cid":cid,
+            "subtotal":subtotal  
+        }
+        return render(request,"shopingcart.html",contaxt)
 
 def department1(request):
     dep_id=department.objects.all()
@@ -303,3 +319,49 @@ def add_wishlist(request,id):
         return redirect(shopgrid)
     else:    
         return render (request,"shopgrid.html")
+    
+def wishlist(request):
+    wishlist_items = Wishlist.objects.filter(user=request.user)
+    return render(request, 'wishlist.html', {'wishlist_items': wishlist_items})
+
+def add_to_cart(request,id):
+    if 'email' in request.session:
+        uid=User.objects.get(email=request.session['email'])
+        pro_id=product.objects.get(id=id)
+        print(pro_id)
+        pid=cart.objects.filter(product1=id,user=uid).exists()
+        if pid:
+            pid=cart.objects.get(product1=id)
+            pid.qty=pid.qty + 1
+            pid.total_price=pid.price * pid.qty
+            pid.save()
+            return redirect(shopingcart)
+        else:
+            cart.objects.create(name=pro_id.pname,image=pro_id.image,price=pro_id.price,total_price=pro_id.price,product1=pro_id,user=uid)  
+
+        return redirect(shopingcart)
+    else:
+        return render (request,"shopingcart.html")
+    
+def pluscart(request,id):
+    pid=cart.objects.get(id=id)
+    print(pid)
+    pid.qty=pid.qty + 1
+    pid.total_price=pid.price * pid.qty
+    pid.save()  
+    return redirect(shopingcart)
+    
+def minuscart(request,id):
+    pid=cart.objects.get(id=id)
+    print(pid)
+    if pid:
+        pid.qty > 1
+        pid.qty -= 1
+        pid.total_price=pid.price * pid.qty         
+        pid.save()
+        return redirect(shopingcart)  
+    else:   
+        pid.delete()
+        return render (request,"shopingcart.html")  
+
+

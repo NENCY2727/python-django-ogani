@@ -48,5 +48,9 @@ urlpatterns = [
     path('add_to_cart/<int:id>', views.add_to_cart, name='add_to_cart'),
     path('pluscart/<int:id>', views.pluscart, name='pluscart'),
     path('minuscart/<int:id>', views.minuscart, name='minuscart'),
+    path('forgot_password', views.forgot_password, name='forgot_password'),
+    path('otp-verify/', views.otp_verify, name='otp_verify'),
+
+    
 ]
 

@@ -364,59 +364,77 @@ def minuscart(request,id):
         pid.delete()
         return render (request,"shopingcart.html")  
     
-def forgot_password(request):
-    if request.POST:
-        email=request.POST['email']
-        otp=random.randint(1000,9999)
-        print(otp)
-        try:    
-            uid=User.objects.get(email=email)
-            uid.forgot_password=otp
-            uid.save()
-            send_mail(
-                'Forgot Password OTP',
-                f'Your OTP for password reset is {otp}.',
-                'nencyp694@gmail.com',
-                [email],
-                )
-            contaxt = {
-                "msg": "OTP sent to your email"
-            }
-            return render(request, "forgot.html", contaxt)
-        except User.DoesNotExist:
-            contaxt = {
-                "msg": "Invalid Email"
-            }
-            return render(request, "forgot.html", contaxt)
-    else:
-        return render(request, "forgot.html")
+# def forgot_password(request):
+#     if request.POST:
+#         email=request.POST['email']
+#         otp=random.randint(1000,9999)
+#         print(otp)
+#         try:    
+#             uid=User.objects.get(email=email)
+#             uid.forgot_password=otp
+#             uid.save()
+#             send_mail(
+#                 'Forgot Password OTP',
+#                 f'Your OTP for password reset is {otp}.',
+#                 'nencyp694@gmail.com',
+#                 [email],
+#                 )
+#             contaxt = {
+#                 "msg": "OTP sent to your email"
+#             }
+#             return render(request, "forgot.html", contaxt)
+#         except User.DoesNotExist:
+#             contaxt = {
+#                 "msg": "Invalid Email"
+#             }
+#             return render(request, "forgot.html", contaxt)
+#     else:
+#         return render(request, "forgot.html")
 
 def forgot_password(request):
     if request.method == "POST":
-        identifier = request.POST.get('identifier')
-        try:
-            # Try email first, then phone
-            if '@' in identifier:
-                user = User.objects.get(email=identifier)
+        if 'otp' in request.POST:
+            # Step 2: Verify OTP and change password
+            otp = request.POST.get('otp')
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+            user_id = request.session.get('reset_user_id')
+            if not user_id:
+                return redirect('forgot_password')
+            user = User.objects.get(id=user_id)
+            if str(user.forgot_password) == otp:
+                if new_password == confirm_password:
+                    user.password = new_password
+                    user.forgot_password = None
+                    user.save()
+                    del request.session['reset_user_id']
+                    return render(request, "login.html", {"msg": "Your password changed successfully. Please login."})
+                else:
+                    return render(request, "forgot.html", {"show_otp_form": True, "msg": "Passwords do not match"})
             else:
-                user = User.objects.get(phone=identifier)
-            otp = random.randint(1000, 9999)
-            user.forgot_password = otp
-            user.save()
-            # Send OTP via email or SMS (here, only email example)
-            if '@' in identifier:
+                return render(request, "forgot.html", {"show_otp_form": True, "msg": "Invalid OTP"})
+        else:
+            # Step 1: Send OTP
+            identifier = request.POST.get('identifier')
+            try:
+                if '@' in identifier:
+                    user = User.objects.get(email=identifier)
+                else:
+                    user = User.objects.get(phone=identifier)
+                otp = random.randint(1000, 9999)
+                user.forgot_password = otp
+                user.save()
                 send_mail(
                     'Forgot Password OTP',
                     f'Your OTP for password reset is {otp}.',
-                    'your_email@example.com',
+                    'your_gmail@gmail.com',
                     [user.email],
                     fail_silently=False,
                 )
-            # For SMS, integrate with an SMS API here if needed
-            request.session['reset_user_id'] = user.id
-            return redirect('otp_verify')
-        except User.DoesNotExist:
-            return render(request, "forgot.html", {"msg": "User not found"})
+                request.session['reset_user_id'] = user.id
+                return render(request, "forgot.html", {"show_otp_form": True, "msg": "OTP sent to your email/phone."})
+            except User.DoesNotExist:
+                return render(request, "forgot.html", {"msg": "User not found"})
     return render(request, "forgot.html")
 
 def otp_verify(request):
